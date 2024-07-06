@@ -30,7 +30,7 @@ for _ in range(15):
     stocks[ticker] = [name, price, industry]
     historical_prices[ticker] = [price]
 
-portfolio = {ticker: 0 for ticker in stocks}
+portfolio = {ticker: {'quantity': 0, 'total_cost': 0} for ticker in stocks}
 balance = 1000.00  # Starting balance
 
 # Variables to manage the pause feature
@@ -53,12 +53,12 @@ def update_prices():
                 stocks[ticker][1] = int(new_price)  # Convert to integer
                 historical_prices[ticker].append(int(new_price))
         else:
-            industry_changes = {industry: random.randint(-4, 5) for industry in industries}
+            industry_changes = {industry: random.randint(-2, 2) for industry in industries}
             bankrupt_stocks = []
             
             for ticker, data in list(stocks.items()):  # Use list to avoid runtime error while modifying dictionary
                 industry = data[2]
-                new_price = max(0, data[1] + industry_changes[industry] + special_random())
+                new_price = max(0, data[1] + industry_changes[industry] + random.randint(-2, 3) + special_random())
                 new_price = int(new_price)  # Convert to integer
                 if new_price == 0:
                     bankrupt_stocks.append(ticker)
@@ -76,9 +76,12 @@ def update_prices():
 def update_labels():
     for ticker, data in stocks.items():
         stock_labels[ticker].config(text=f"{data[0]} ({data[2]}) [{ticker}]: ${data[1]}")
-    balance_label.config(text=f"Balance: ${balance}")
-    for ticker, quantity in portfolio.items():
-        portfolio_labels[ticker].config(text=f"{ticker}: {quantity}")
+    balance_label.config(text=f"Balance: ${balance:.0f}")
+    for ticker, data in portfolio.items():
+        quantity = data['quantity']
+        weighted_avg = calculate_weighted_average(ticker)
+        portfolio_labels[ticker]['quantity'].config(text=f"{ticker}: {quantity} (WtdAvg: ${weighted_avg:.1f})")
+
 
 # Function to show the insufficient funds popup
 def show_insufficient_funds_popup():
@@ -116,24 +119,24 @@ def show_bankruptcy_popup(ticker):
     button = tk.Button(top, text="OK", command=top.destroy, fg='white', bg='red', font=("Helvetica", 12))
     button.pack(pady=(0, 20))
 
+# Function to handle bankrupt stocks
 def handle_bankruptcy(ticker):
     # Only proceed with bankruptcy for 33% of the stocks satisfying the condition
     if random.random() > 0.33:
         return
-
     show_bankruptcy_popup(ticker)  # Show the bankruptcy pop-up
 
     # Remove GUI elements
     row_index = stock_labels[ticker].grid_info()['row']
-    stock_labels[ticker].grid_forget()
-    portfolio_labels[ticker].grid_forget()
-    stock_labels.pop(ticker)
-    portfolio_labels.pop(ticker)
-
+    for widget in stock_frame.grid_slaves(row=row_index):
+        widget.grid_forget()
+    
     # Remove the stock from data structures
     del stocks[ticker]
     del historical_prices[ticker]
-    portfolio.pop(ticker)
+    del portfolio[ticker]
+    del stock_labels[ticker]
+    del portfolio_labels[ticker]
 
     generate_new_stock(row_index)
     update_ticker()
@@ -149,7 +152,7 @@ def generate_new_stock(row_index):
     industry = random.choice(industries)
     stocks[ticker] = [name, price, industry]
     historical_prices[ticker] = [price]
-    portfolio[ticker] = 0
+    portfolio[ticker] = {'quantity': 0, 'total_cost': 0}
     
     add_stock_to_gui(ticker, row_index)
     update_ticker()
@@ -157,19 +160,21 @@ def generate_new_stock(row_index):
 
 def add_stock_to_gui(ticker, row_index):
     stock_labels[ticker] = tk.Label(stock_frame, text=f"{stocks[ticker][0]} ({stocks[ticker][2]}) [{ticker}]: ${stocks[ticker][1]}", fg='lime', bg='black', font=("Helvetica", 12))
-    stock_labels[ticker].grid(row=row_index, column=0, padx=10, pady=5, sticky='w')
-    portfolio_labels[ticker] = tk.Label(stock_frame, text=f"{ticker}: {portfolio[ticker]}", fg='white', bg='black', font=("Helvetica", 12))
-    portfolio_labels[ticker].grid(row=row_index, column=1, padx=10, pady=5, sticky='w')
+    stock_labels[ticker].grid(row=row_index, column=0, padx=5, pady=4, sticky='w')
+    
+    portfolio_labels[ticker] = {'quantity': tk.Label(stock_frame, text=f"{ticker}: {portfolio[ticker]['quantity']} (WtdAvg: ${calculate_weighted_average(ticker):.1f})", fg='white', bg='black', font=("Helvetica", 12))}
+    portfolio_labels[ticker]['quantity'].grid(row=row_index, column=1, padx=5, pady=4, sticky='w')
+    
     buy_button = tk.Button(stock_frame, text="Buy", command=lambda t=ticker: buy_stock(t, 1), fg='white', bg='green', font=("Helvetica", 10))
-    buy_button.grid(row=row_index, column=2, padx=10, pady=5)
+    buy_button.grid(row=row_index, column=2, padx=5, pady=4)
     buy_5_button = tk.Button(stock_frame, text="Buy 5", command=lambda t=ticker: buy_stock(t, 5), fg='white', bg='darkgreen', font=("Helvetica", 10))
-    buy_5_button.grid(row=row_index, column=3, padx=10, pady=5)
+    buy_5_button.grid(row=row_index, column=3, padx=5, pady=4)
     sell_button = tk.Button(stock_frame, text="Sell", command=lambda t=ticker: sell_stock(t, 1), fg='white', bg='red', font=("Helvetica", 10))
-    sell_button.grid(row=row_index, column=4, padx=10, pady=5)
+    sell_button.grid(row=row_index, column=4, padx=5, pady=4)
     sell_all_button = tk.Button(stock_frame, text="Sell All", command=lambda t=ticker: sell_all_stock(t), fg='white', bg='darkred', font=("Helvetica", 10))
-    sell_all_button.grid(row=row_index, column=5, padx=10, pady=5)
+    sell_all_button.grid(row=row_index, column=5, padx=5, pady=4)
     graph_button = tk.Button(stock_frame, text="Graph", command=lambda t=ticker: plot_stock(t), fg='black', bg='yellow', font=("Helvetica", 10))
-    graph_button.grid(row=row_index, column=6, padx=10, pady=5)
+    graph_button.grid(row=row_index, column=6, padx=5, pady=4)
 
 # Function to scroll the ticker
 def scroll_ticker():
@@ -191,34 +196,43 @@ def buy_stock(ticker, amount=1):
     total_cost = price * amount
     if balance >= total_cost:
         balance -= total_cost
-        portfolio[ticker] += amount
+        portfolio[ticker]['quantity'] += amount
+        portfolio[ticker]['total_cost'] += total_cost
         update_labels()
     else:
         show_insufficient_funds_popup()
 
-
 # Function to handle selling stocks
 def sell_stock(ticker, amount=1):
     global balance
-    if portfolio[ticker] >= amount:
+    if portfolio[ticker]['quantity'] >= amount:
         price = stocks[ticker][1]
         total_revenue = price * amount
         balance += total_revenue
-        portfolio[ticker] -= amount
+        portfolio[ticker]['quantity'] -= amount
+        portfolio[ticker]['total_cost'] -= amount * price  # Adjust the total cost
         update_labels()
     else:
         show_no_stocks_popup()
+
+def calculate_weighted_average(ticker):
+    quantity = portfolio[ticker]['quantity']
+    if quantity == 0:
+        return 0.0
+    total_cost = portfolio[ticker]['total_cost']
+    return total_cost / quantity
 
 
 # Function to handle selling all stocks of a type
 def sell_all_stock(ticker):
     global balance
-    amount = portfolio[ticker]
+    amount = portfolio[ticker]['quantity']
     if amount > 0:
         price = stocks[ticker][1]
         total_revenue = price * amount
         balance += total_revenue
-        portfolio[ticker] = 0
+        portfolio[ticker]['quantity'] = 0
+        portfolio[ticker]['total_cost'] = 0  # Reset the total cost
         update_labels()
     else:
         show_no_stocks_popup()
@@ -312,7 +326,7 @@ def plot_total_market_value():
 # Function to plot a pie chart of the value of current holdings
 def plot_holdings():
     fig, ax = plt.subplots(figsize=(5, 4))
-    holdings = {ticker: quantity * stocks[ticker][1] for ticker, quantity in portfolio.items() if quantity > 0}
+    holdings = {ticker: data['quantity'] * stocks[ticker][1] for ticker, data in portfolio.items() if data['quantity'] > 0}
     labels = holdings.keys()
     sizes = holdings.values()
 
@@ -391,24 +405,29 @@ pause_button = tk.Button(button_frame, text="Pause", command=toggle_pause, fg='b
 pause_button.grid(row=0, column=4, padx=5, pady=5, sticky='e')
 
 # Create and place stock labels with a dark theme
+# Create and place stock labels with a dark theme
 stock_labels = {}
 portfolio_labels = {}
+
 for i, ticker in enumerate(stocks):
     stock_labels[ticker] = tk.Label(stock_frame, text=f"{stocks[ticker][0]} ({stocks[ticker][2]}) [{ticker}]: ${stocks[ticker][1]}", fg='lime', bg='black', font=("Helvetica", 12))
-    stock_labels[ticker].grid(row=i, column=0, padx=10, pady=5, sticky='w')
-    portfolio_labels[ticker] = tk.Label(stock_frame, text=f"{ticker}: {portfolio[ticker]}", fg='white', bg='black', font=("Helvetica", 12))
-    portfolio_labels[ticker].grid(row=i, column=1, padx=10, pady=5, sticky='w')
-    buy_button = tk.Button(stock_frame, text="Buy", command=lambda t=ticker: buy_stock(t, 1), fg='white', bg='green', font=("Helvetica", 10))
-    buy_button.grid(row=i, column=2, padx=10, pady=5)
-    buy_5_button = tk.Button(stock_frame, text="Buy 5", command=lambda t=ticker: buy_stock(t, 5), fg='white', bg='darkgreen', font=("Helvetica", 10))
-    buy_5_button.grid(row=i, column=3, padx=10, pady=5)
-    sell_button = tk.Button(stock_frame, text="Sell", command=lambda t=ticker: sell_stock(t, 1), fg='white', bg='red', font=("Helvetica", 10))
-    sell_button.grid(row=i, column=4, padx=10, pady=5)
-    sell_all_button = tk.Button(stock_frame, text="Sell All", command=lambda t=ticker: sell_all_stock(t), fg='white', bg='darkred', font=("Helvetica", 10))
-    sell_all_button.grid(row=i, column=5, padx=10, pady=5)
-    graph_button = tk.Button(stock_frame, text="Graph", command=lambda t=ticker: plot_stock(t), fg='black', bg='yellow', font=("Helvetica", 10))
-    graph_button.grid(row=i, column=6, padx=10, pady=5)
+    stock_labels[ticker].grid(row=i, column=0, padx=10, pady=4, sticky='w')
+    
+    quantity = portfolio[ticker]['quantity']
+    weighted_avg = calculate_weighted_average(ticker)
+    portfolio_labels[ticker] = {'quantity': tk.Label(stock_frame, text=f"{ticker}: {quantity} (WtdAvg: ${weighted_avg:.1f})", fg='white', bg='black', font=("Helvetica", 10))}
+    portfolio_labels[ticker]['quantity'].grid(row=i, column=1, padx=10, pady=6, sticky='e')
 
+    buy_button = tk.Button(stock_frame, text="Buy", command=lambda t=ticker: buy_stock(t, 1), fg='white', bg='green', font=("Helvetica", 10))
+    buy_button.grid(row=i, column=2, padx=2, pady=2)
+    buy_5_button = tk.Button(stock_frame, text="Buy 5", command=lambda t=ticker: buy_stock(t, 5), fg='white', bg='darkgreen', font=("Helvetica", 10))
+    buy_5_button.grid(row=i, column=3, padx=2, pady=2)
+    sell_button = tk.Button(stock_frame, text="Sell", command=lambda t=ticker: sell_stock(t, 1), fg='white', bg='red', font=("Helvetica", 10))
+    sell_button.grid(row=i, column=4, padx=2, pady=2)
+    sell_all_button = tk.Button(stock_frame, text="Sell All", command=lambda t=ticker: sell_all_stock(t), fg='white', bg='darkred', font=("Helvetica", 10))
+    sell_all_button.grid(row=i, column=5, padx=2, pady=2)
+    graph_button = tk.Button(stock_frame, text="Graph", command=lambda t=ticker: plot_stock(t), fg='black', bg='yellow', font=("Helvetica", 10))
+    graph_button.grid(row=i, column=6, padx=2, pady=2)
 
 # Initialize ticker text
 ticker_text = ""
