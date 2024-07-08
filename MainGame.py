@@ -47,7 +47,7 @@ def update_prices():
     if not paused:
         # Introduce a 1 in 100 chance for a market crash
         if random.randint(1, 100) == 1:
-            crash_drop = random.randint(20, 80)  # Drop between $25 and $80
+            crash_drop = random.randint(5, 80)  # Drop between $5 and $80
             for ticker in stocks:
                 new_price = max(0, stocks[ticker][1] - crash_drop)
                 stocks[ticker][1] = int(new_price)  # Convert to integer
@@ -58,7 +58,7 @@ def update_prices():
             
             for ticker, data in list(stocks.items()):  # Use list to avoid runtime error while modifying dictionary
                 industry = data[2]
-                new_price = max(0, data[1] + industry_changes[industry] + random.randint(-2, 3) + special_random())
+                new_price = max(0, data[1] + industry_changes[industry] + random.randint(-4, 5) + special_random())
                 new_price = int(new_price)  # Convert to integer
                 if new_price == 0:
                     bankrupt_stocks.append(ticker)
