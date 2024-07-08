@@ -8,8 +8,8 @@ import random
 
 # Helper function to generate a random company name
 def generate_company_name():
-    prefixes = ["Tech", "Info", "Data", "Net", "Global", "Next", "Prime", "Eco", "Auto", "Fin","Grand","Prentor","Kadubo","Fresh","West","Dog","Space","Checker","National","Future","Spin","Zip","Umango","Lofty","Coldwater","Prime","Jimper","Chispa","Alleged","Rubber","Qwerty"]
-    suffixes = ["Corp", "Inc", "Solutions", "Systems", "Industries", "Holdings", "Enterprises", "Technologies", "Group", "Labs", "and Sons","Benefits","Hothaway","Grumble","Moose","Secure","Boost","Smithworks","Premium","Future","Communities","Merlin","Mania","Sciences","Special","Duck Limited","Credit Corp","Quants"]
+    prefixes = ["Tech", "Info", "Data", "Net", "Global", "Next", "Prime", "Eco", "Auto", "Fin","Grand","Prentor","Kadubo","Fresh","West","Dog","Space","Checker","National","Future","Spin","Zip","Umango","Lofty","Coldwater","Prime","Jimper","Chispa","Alleged","Rubber","Qwerty","Trusted","Crow","Dancing"]
+    suffixes = ["Corp", "Inc", "Solutions", "Systems", "Industries", "Holdings", "Enterprises", "Technologies", "Group", "Labs", "and Sons","Benefits","Hothaway","Grumble","Moose","Secure","Boost","Smithworks","Premium","Future","Communities","Merlin","Mania","Sciences","Special","Duck Limited","Credit Corp","Quants","Cubed","Beagle","Fire","Foxes"]
     return f"{random.choice(prefixes)} {random.choice(suffixes)}"
 
 # Helper function to generate a ticker symbol from the company name
@@ -18,7 +18,7 @@ def generate_ticker(name):
     return "".join([word[0] for word in words]).upper()
 
 # Initialize stock data
-industries = ["Technology", "Finance", "Healthcare", "Energy", "Consumer Goods", "Utilities", "Telecommunications", "Real Estate"]
+industries = ["Technology", "Finance", "Healthcare", "Energy", "Consumer Goods", "Utilities", "Telecommunications", "Real Estate","Insurance","Aerospace & Defense","Materials"]
 stocks = {}
 historical_prices = {}
 
@@ -41,7 +41,7 @@ def special_random():
     if random.randint(1.00, 100.00) <= 99:
         return 0
     else:
-        return random.randint(-90.00, 78.00)
+        return random.randint(-82.00, 78.00)
 
 def update_prices():
     if not paused:
