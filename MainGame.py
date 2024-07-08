@@ -41,7 +41,7 @@ def special_random():
     if random.randint(1.00, 100.00) <= 99:
         return 0
     else:
-        return random.randint(-80.00, 78.00)
+        return random.randint(-90.00, 78.00)
 
 def update_prices():
     if not paused:
