@@ -8,8 +8,8 @@ import random
 
 # Helper function to generate a random company name
 def generate_company_name():
-    prefixes = ["Tech", "Info", "Data", "Net", "Global", "Next", "Prime", "Eco", "Auto", "Fin","Grand","Prentor","Kadubo","Fresh","West","Dog","Space","Checker","National","Future","Spin","Zip","Umango","Lofty","Coldwater","Prime","Jimper","Chispa"]
-    suffixes = ["Corp", "Inc", "Solutions", "Systems", "Industries", "Holdings", "Enterprises", "Technologies", "Group", "Labs", "and Sons","Benefits","Hothaway","Grumble","Moose","Secure","Boost","Smithworks","Premium","Future","Communities","Merlin","Mania"]
+    prefixes = ["Tech", "Info", "Data", "Net", "Global", "Next", "Prime", "Eco", "Auto", "Fin","Grand","Prentor","Kadubo","Fresh","West","Dog","Space","Checker","National","Future","Spin","Zip","Umango","Lofty","Coldwater","Prime","Jimper","Chispa","Alleged","Rubber","Qwerty"]
+    suffixes = ["Corp", "Inc", "Solutions", "Systems", "Industries", "Holdings", "Enterprises", "Technologies", "Group", "Labs", "and Sons","Benefits","Hothaway","Grumble","Moose","Secure","Boost","Smithworks","Premium","Future","Communities","Merlin","Mania","Sciences","Special","Duck Limited","Credit Corp","Quants"]
     return f"{random.choice(prefixes)} {random.choice(suffixes)}"
 
 # Helper function to generate a ticker symbol from the company name
@@ -41,13 +41,13 @@ def special_random():
     if random.randint(1.00, 100.00) <= 99:
         return 0
     else:
-        return random.randint(-81.00, 78.00)
+        return random.randint(-80.00, 78.00)
 
 def update_prices():
     if not paused:
         # Introduce a 1 in 100 chance for a market crash
         if random.randint(1, 100) == 1:
-            crash_drop = random.randint(25, 80)  # Drop between $25 and $80
+            crash_drop = random.randint(20, 80)  # Drop between $25 and $80
             for ticker in stocks:
                 new_price = max(0, stocks[ticker][1] - crash_drop)
                 stocks[ticker][1] = int(new_price)  # Convert to integer
@@ -162,7 +162,7 @@ def add_stock_to_gui(ticker, row_index):
     stock_labels[ticker] = tk.Label(stock_frame, text=f"{stocks[ticker][0]} ({stocks[ticker][2]}) [{ticker}]: ${stocks[ticker][1]}", fg='lime', bg='black', font=("Helvetica", 12))
     stock_labels[ticker].grid(row=row_index, column=0, padx=5, pady=4, sticky='w')
     
-    portfolio_labels[ticker] = {'quantity': tk.Label(stock_frame, text=f"{ticker}: {portfolio[ticker]['quantity']} (WtdAvg: ${calculate_weighted_average(ticker):.1f})", fg='white', bg='black', font=("Helvetica", 12))}
+    portfolio_labels[ticker] = {'quantity': tk.Label(stock_frame, text=f"{ticker}: {portfolio[ticker]['quantity']} (WtdAvg: ${calculate_weighted_average(ticker):.1f})", fg='white', bg='black', font=("Helvetica", 10))}
     portfolio_labels[ticker]['quantity'].grid(row=row_index, column=1, padx=5, pady=4, sticky='w')
     
     buy_button = tk.Button(stock_frame, text="Buy", command=lambda t=ticker: buy_stock(t, 1), fg='white', bg='green', font=("Helvetica", 10))
