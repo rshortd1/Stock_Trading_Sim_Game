@@ -47,7 +47,7 @@ def update_prices():
     if not paused:
         # Introduce a 1 in 100 chance for a market crash
         if random.randint(1, 100) == 1:
-            crash_drop = random.randint(5, 80)  # Drop between $5 and $80
+            crash_drop = random.randint(10, 80)  # Drop between $10 and $80
             for ticker in stocks:
                 new_price = max(0, stocks[ticker][1] - crash_drop)
                 stocks[ticker][1] = int(new_price)  # Convert to integer
