@@ -9,7 +9,7 @@ import random
 # Helper function to generate a random company name
 def generate_company_name():
     prefixes = ["Tech", "Info", "Data", "Net", "Global", "Next", "Prime", "Eco", "Auto", "Fin","Grand","Prentor","Kadubo","Fresh","West","Dog","Space","Checker","National","Future","Spin","Zip","Umango","Lofty","Coldwater","Prime","Jimper","Chispa","Alleged","Rubber","Qwerty","Trusted","Crow","Dancing"]
-    suffixes = ["Corp", "Inc", "Solutions", "Systems", "Industries", "Holdings", "Enterprises", "Technologies", "Group", "Labs", "and Sons","Benefits","Hothaway","Grumble","Moose","Secure","Boost","Smithworks","Premium","Future","Communities","Merlin","Mania","Sciences","Special","Duck Limited","Credit Corp","Quants","Cubed","Beagle","Fire","Foxes"]
+    suffixes = ["Corp", "Inc", "Solutions", "Systems", "Industries", "Holdings", "Enterprises", "Technologies", "Group", "Labs", "and Sons","Benefits","Hothaway","Grumble","Moose","Secure","Boost","Smithworks","Premium","Future","Communities","Merlin","Mania","Sciences","Special","Duck Limited","Credit Corp","Quants","Cubed","Beagle","Fire","Foxes","and Daughters"]
     return f"{random.choice(prefixes)} {random.choice(suffixes)}"
 
 # Helper function to generate a ticker symbol from the company name
