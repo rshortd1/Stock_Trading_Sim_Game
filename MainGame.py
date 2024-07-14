@@ -36,7 +36,7 @@ balance = 1000.00  # Starting balance
 # Variables to manage the pause feature
 paused = False
 
-# Helper function to generate a random int that picks 0 97% of the time and between -100 and 100 3% of the time
+# Helper function to generate a random int that picks 0 99% of the time and between -100 and 100 3% of the time
 def special_random():
     if random.randint(1.00, 100.00) <= 99:
         return 0
